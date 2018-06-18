@@ -115,6 +115,91 @@ static void Object_releaseObject(void *prv, JSOBJ obj)
 
 static char *g_kwlist[] = {"obj", NULL};
 
+PyObject* JSONToObjAndIndex(PyObject* self, PyObject *args, PyObject *kwargs)
+{
+  PyObject *ret;
+  PyObject *sarg;
+  PyObject *arg;
+  JSONObjectDecoder decoder =
+  {
+    Object_newString,
+    Object_objectAddKey,
+    Object_arrayAddItem,
+    Object_newTrue,
+    Object_newFalse,
+    Object_newNull,
+    Object_newObject,
+    Object_newArray,
+    Object_newInteger,
+    Object_newLong,
+    Object_newUnsignedLong,
+    Object_newDouble,
+    Object_releaseObject,
+    PyObject_Malloc,
+    PyObject_Free,
+    PyObject_Realloc
+  };
+
+  decoder.prv = NULL;
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", g_kwlist, &arg))
+  {
+      return NULL;
+  }
+
+  if (PyString_Check(arg))
+  {
+      sarg = arg;
+  }
+  else
+  if (PyUnicode_Check(arg))
+  {
+    sarg = PyUnicode_AsUTF8String(arg);
+    if (sarg == NULL)
+    {
+      //Exception raised above us by codec according to docs
+      return NULL;
+    }
+  }
+  else
+  {
+    PyErr_Format(PyExc_TypeError, "Expected String or Unicode");
+    return NULL;
+  }
+
+  decoder.errorStr = NULL;
+  decoder.errorOffset = NULL;
+
+  dconv_s2d_init(DCONV_S2D_ALLOW_TRAILING_JUNK, 0.0, 0.0, "Infinity", "NaN");
+
+  long index = -1;
+  ret = JSON_DecodeObjectIndex(&decoder, PyString_AS_STRING(sarg), PyString_GET_SIZE(sarg), &index);
+
+  dconv_s2d_free();
+
+  if (sarg != arg)
+  {
+    Py_DECREF(sarg);
+  }
+
+  if (decoder.errorStr)
+  {
+    /*
+    FIXME: It's possible to give a much nicer error message here with actual failing element in input etc*/
+
+    PyErr_Format (PyExc_ValueError, "%s", decoder.errorStr);
+
+    if (ret)
+    {
+        Py_DECREF( (PyObject *) ret);
+    }
+
+    return NULL;
+  }
+
+  return Py_BuildValue("(Ol)", ret, index);
+}
+
 PyObject* JSONToObj(PyObject* self, PyObject *args, PyObject *kwargs)
 {
   PyObject *ret;

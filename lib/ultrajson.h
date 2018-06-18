@@ -325,6 +325,7 @@ typedef struct __JSONObjectDecoder
 } JSONObjectDecoder;
 
 EXPORTFUNCTION JSOBJ JSON_DecodeObject(JSONObjectDecoder *dec, const char *buffer, size_t cbBuffer);
+EXPORTFUNCTION JSOBJ JSON_DecodeObjectIndex(JSONObjectDecoder *dec, const char *buffer, size_t cbBuffer, long* index);
 
 #define DCONV_DECIMAL_IN_SHORTEST_LOW -6
 #define DCONV_DECIMAL_IN_SHORTEST_HIGH 21
