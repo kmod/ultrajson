@@ -810,10 +810,10 @@ JSOBJ JSON_DecodeObjectIndex(JSONObjectDecoder *dec, const char *buffer, size_t 
 
   if (!(dec->errorStr))
   {
-    if ((ds.end - ds.start) > 0)
-    {
-      SkipWhitespace(&ds);
-    }
+    //if ((ds.end - ds.start) > 0)
+    //{
+      //SkipWhitespace(&ds);
+    //}
 
     *index = ds.start - buffer;
   }
