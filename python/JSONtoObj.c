@@ -197,7 +197,9 @@ PyObject* JSONToObjAndIndex(PyObject* self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  return Py_BuildValue("(Ol)", ret, index);
+  PyObject* r = Py_BuildValue("(Ol)", ret, index);
+  Py_DECREF(ret);
+  return r;
 }
 
 PyObject* JSONToObj(PyObject* self, PyObject *args, PyObject *kwargs)
